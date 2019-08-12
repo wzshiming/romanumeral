@@ -8,17 +8,24 @@ import (
 	"unsafe"
 )
 
-var romanLetterValue = map[rune]Roman{
-	'M': 1000,
-	'D': 500,
-	'C': 100,
-	'L': 50,
-	'X': 10,
-	'V': 5,
-	'I': 1,
-}
-var romanValues = []Roman{1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1}
-var romanLetters = []string{"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"}
+var (
+	errAccessBeyond = errors.New("romanumeral: Roman access beyond the numeral")
+	errNilPointer   = errors.New("romanumeral: Roman decode on nil pointer")
+)
+
+var (
+	romanLetterValue = map[rune]Roman{
+		'M': 1000,
+		'D': 500,
+		'C': 100,
+		'L': 50,
+		'X': 10,
+		'V': 5,
+		'I': 1,
+	}
+	romanValues  = []Roman{1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1}
+	romanLetters = []string{"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"}
+)
 
 type Roman uint16
 
@@ -28,7 +35,7 @@ func (r Roman) IsValid() bool {
 
 func (r *Roman) Decode(s []byte) (n int, err error) {
 	if r == nil {
-		return 0, errors.New("romanumeral: Roman decode on nil pointer")
+		return 0, errNilPointer
 	}
 	var pre Roman
 	var curr Roman
@@ -61,7 +68,7 @@ func (r *Roman) DecodeString(s string) (n int, err error) {
 
 func (r Roman) Encode() ([]byte, error) {
 	if !r.IsValid() {
-		return nil, errors.New("romanumeral: Roman access beyond the numeral")
+		return nil, errAccessBeyond
 	}
 	buf := bytes.NewBuffer(nil)
 	for i := 0; i != len(romanValues); {
