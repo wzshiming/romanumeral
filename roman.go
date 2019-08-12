@@ -28,7 +28,7 @@ func (r Roman) IsValid() bool {
 
 func (r *Roman) Decode(s []byte) (n int, err error) {
 	if r == nil {
-		return 0, errors.New("numerals: Roman decode on nil pointer")
+		return 0, errors.New("romanumeral: Roman decode on nil pointer")
 	}
 	var pre Roman
 	var curr Roman
@@ -61,7 +61,7 @@ func (r *Roman) DecodeString(s string) (n int, err error) {
 
 func (r Roman) Encode() ([]byte, error) {
 	if !r.IsValid() {
-		return nil, errors.New("numerals: Roman access beyond the numeral")
+		return nil, errors.New("romanumeral: Roman access beyond the numeral")
 	}
 	buf := bytes.NewBuffer(nil)
 	for i := 0; i != len(romanValues); {
@@ -87,7 +87,7 @@ func (r Roman) EncodeToString() (string, error) {
 func (r Roman) String() string {
 	ret, err := r.EncodeToString()
 	if err != nil {
-		return fmt.Sprintf("Roman(%d): %s", uint(r), err.Error())
+		return fmt.Sprintf("Roman(%d)", uint16(r))
 	}
 	return ret
 }
