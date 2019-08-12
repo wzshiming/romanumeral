@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"unicode/utf8"
+	"unsafe"
 )
 
 var romanLetterValue = map[rune]Roman{
@@ -24,18 +26,20 @@ func (r Roman) IsValid() bool {
 	return r > 0 && r < 4000
 }
 
-func (r *Roman) Decode(s string) (n int, err error) {
+func (r *Roman) Decode(s []byte) (n int, err error) {
 	if r == nil {
 		return 0, errors.New("numerals: Roman decode on nil pointer")
 	}
 	var pre Roman
 	var curr Roman
 	var ret Roman
-	for i, ch := range s {
+
+	for n != len(s) {
+		ch, size := utf8.DecodeRune(s[n:])
+		n += size
 		curr = romanLetterValue[ch]
 		if curr == 0 {
-			*r = ret
-			return i, nil
+			break
 		}
 		if pre >= curr {
 			ret += pre
@@ -44,13 +48,20 @@ func (r *Roman) Decode(s string) (n int, err error) {
 		}
 		pre = curr
 	}
-	*r = ret + curr
-	return len(s), nil
+	if curr != 0 {
+		ret += curr
+	}
+	*r = ret
+	return n, nil
 }
 
-func (r Roman) Encode() (string, error) {
+func (r *Roman) DecodeString(s string) (n int, err error) {
+	return r.Decode(*(*[]byte)(unsafe.Pointer(&s)))
+}
+
+func (r Roman) Encode() ([]byte, error) {
 	if !r.IsValid() {
-		return "", errors.New("numerals: Roman access beyond the numeral")
+		return nil, errors.New("numerals: Roman access beyond the numeral")
 	}
 	buf := bytes.NewBuffer(nil)
 	for i := 0; i != len(romanValues); {
@@ -62,11 +73,19 @@ func (r Roman) Encode() (string, error) {
 			i++
 		}
 	}
-	return buf.String(), nil
+	return buf.Bytes(), nil
+}
+
+func (r Roman) EncodeToString() (string, error) {
+	b, err := r.Encode()
+	if err != nil {
+		return "", err
+	}
+	return *(*string)(unsafe.Pointer(&b)), nil
 }
 
 func (r Roman) String() string {
-	ret, err := r.Encode()
+	ret, err := r.EncodeToString()
 	if err != nil {
 		return fmt.Sprintf("Roman(%d): %s", uint(r), err.Error())
 	}
