@@ -1,7 +1,6 @@
 package romanumeral
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"unicode/utf8"
@@ -43,21 +42,19 @@ func (r *Roman) Decode(s []byte) (n int, err error) {
 
 	for n != len(s) {
 		ch, size := utf8.DecodeRune(s[n:])
-		n += size
 		curr = romanLetterValue[ch]
-		if curr == 0 {
-			break
-		}
 		if pre >= curr {
 			ret += pre
 		} else {
 			ret -= pre
 		}
+		if curr == 0 {
+			break
+		}
 		pre = curr
+		n += size
 	}
-	if curr != 0 {
-		ret += curr
-	}
+
 	if !ret.IsValid() {
 		return 0, errAccessBeyond
 	}
@@ -73,17 +70,17 @@ func (r Roman) Encode() ([]byte, error) {
 	if !r.IsValid() {
 		return nil, errAccessBeyond
 	}
-	buf := bytes.NewBuffer(nil)
+	buf := make([]byte, 0, 16)
 	for i := 0; i != len(romanValues); {
 		v := romanValues[i]
 		if r >= v {
 			r -= v
-			buf.WriteString(romanLetters[i])
+			buf = append(buf, romanLetters[i]...)
 		} else {
 			i++
 		}
 	}
-	return buf.Bytes(), nil
+	return buf, nil
 }
 
 func (r Roman) EncodeToString() (string, error) {
