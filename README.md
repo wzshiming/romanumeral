@@ -15,24 +15,22 @@ go get -u -v github.com/wzshiming/romanumeral
 ## Example
 
 ``` golang
-
 func TestRoman(t *testing.T) {
 	for i := Roman(1); i != 4000; i++ {
-		tmp, err := i.Encode()
+		tmp, err := i.EncodeToString()
 		if err != nil {
 			t.Error(err)
 		}
 		var d Roman
-		_, err = d.Decode(tmp)
+		off, err := d.DecodeString(tmp)
 		if err != nil {
 			t.Error(err)
 		}
 		if d != i {
-			t.Fail()
+			t.Fatal(int(i), d, i, off, tmp)
 		}
 	}
 }
-
 ```
 
 ## License
