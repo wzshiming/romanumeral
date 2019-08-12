@@ -58,6 +58,9 @@ func (r *Roman) Decode(s []byte) (n int, err error) {
 	if curr != 0 {
 		ret += curr
 	}
+	if !ret.IsValid() {
+		return 0, errAccessBeyond
+	}
 	*r = ret
 	return n, nil
 }
